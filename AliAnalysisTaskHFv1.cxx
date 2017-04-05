@@ -84,6 +84,7 @@
 #include "AliMultSelection.h"
 #include "AliQnCorrectionsManager.h"
 #include "AliAnalysisTaskFlowVectorCorrections.h"
+#include "AliAnalysisTaskZDCEP.h"
 
 #include "AliAnalysisTaskHFv1.h"
 
@@ -511,7 +512,7 @@ void AliAnalysisTaskHFv1::UserExec(Option_t */*option*/)
   // Execute analysis for current event:
   // heavy flavor candidates association to MC truth
   AliAODEvent *aod = dynamic_cast<AliAODEvent*> (InputEvent());
-    
+  
   fhEventsInfo->Fill(0);
 
   //   Protection against the mismatch of candidate TRefs:
@@ -698,6 +699,25 @@ void AliAnalysisTaskHFv1::UserExec(Option_t */*option*/)
       ((TH1F*)fOutput->FindObject("hNormQB"))->Fill(TMath::Sqrt(QB[0]*QB[0]+QB[1]*QB[1]));
     }
   }
+  else {
+    //get Qx and Qy for SP analysis
+    if(fEvPlaneDet==kZDCA || fEvPlaneDet==kZDCC) {
+      AliAnalysisTaskZDCEP *fZDCEPTask = dynamic_cast<AliAnalysisTaskZDCEP*>(AliAnalysisManager::GetAnalysisManager()->GetTask("AliAnalysisTaskZDCEP"));
+      if (fZDCEPTask != NULL) {
+        // get ZDC Q-vectors
+        fZDCEPTask->GetZDCQVectors(QA[0],QA[1],QB[0],QB[1]);
+      }
+      else {
+        AliWarning("This task needs AliAnalysisTaskZDCEP and it is not present. Aborting!!!\n");
+        return;
+      }
+    }
+    if(fFlowMethod==kSP) {
+      ((TH1F*)fOutput->FindObject("hNormQA"))->Fill(TMath::Sqrt(QA[0]*QA[0]+QA[1]*QA[1]));
+      ((TH1F*)fOutput->FindObject("hNormQB"))->Fill(TMath::Sqrt(QB[0]*QB[0]+QB[1]*QB[1]));
+    }
+  }
+  
   
   //get q2 for event shape anaylsis
   Double_t q2=-1;
@@ -1418,6 +1438,13 @@ void AliAnalysisTaskHFv1::SetEventPlaneMethod(Int_t method){
       fEvPlaneDet=kNegTPC;
       fSubEvDetA=kV0A;
       fSubEvDetB=kV0C;
+      break;
+    }
+  case kZDC:
+    {
+      fEvPlaneDet=kZDCA;
+      fSubEvDetA=kZDCC;
+      fSubEvDetB=kFullTPC;
       break;
     }
   default:
