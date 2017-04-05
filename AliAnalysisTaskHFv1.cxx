@@ -15,7 +15,11 @@
 
 /////////////////////////////////////////////////////////////
 //
-// AliAnalysisTaskSEHFvn gives the needed tools for the D
+// AliAnalysisTaskHFv1 directed flow of D mesons with scalar
+// product method (modified from AliAnalysisTaskHFv1)
+// Authors: Andrea Dubla, Jacopo Margutti
+//
+// AliAnalysisTaskHFv1 gives the needed tools for the D
 // mesons vn analysis with event plane method
 // Authors: Chiara Bianchin, Robert Grajcarek, Giacomo Ortona, 
 //          Carlos Perez Lara, Francesco Prino, Anastasia Barbano,
@@ -81,13 +85,13 @@
 #include "AliQnCorrectionsManager.h"
 #include "AliAnalysisTaskFlowVectorCorrections.h"
 
-#include "AliAnalysisTaskSEHFvn.h"
+#include "AliAnalysisTaskHFv1.h"
 
-ClassImp(AliAnalysisTaskSEHFvn)
+ClassImp(AliAnalysisTaskHFv1)
 
 
 //________________________________________________________________________
-AliAnalysisTaskSEHFvn::AliAnalysisTaskSEHFvn():
+AliAnalysisTaskHFv1::AliAnalysisTaskHFv1():
 AliAnalysisTaskSE(),
   fhEventsInfo(0),
   fOutput(0),
@@ -137,7 +141,7 @@ AliAnalysisTaskSE(),
 }
 
 //________________________________________________________________________
-AliAnalysisTaskSEHFvn::AliAnalysisTaskSEHFvn(const char *name,AliRDHFCuts *rdCuts,Int_t decaychannel):
+AliAnalysisTaskHFv1::AliAnalysisTaskHFv1(const char *name,AliRDHFCuts *rdCuts,Int_t decaychannel):
   AliAnalysisTaskSE(name),
   fhEventsInfo(0),
   fOutput(0),
@@ -242,7 +246,7 @@ AliAnalysisTaskSEHFvn::AliAnalysisTaskSEHFvn(const char *name,AliRDHFCuts *rdCut
 }
 
 //________________________________________________________________________
-AliAnalysisTaskSEHFvn::~AliAnalysisTaskSEHFvn()
+AliAnalysisTaskHFv1::~AliAnalysisTaskHFv1()
 {
   // Destructor
   if(fOutput && !fOutput->IsOwner()){
@@ -259,7 +263,7 @@ AliAnalysisTaskSEHFvn::~AliAnalysisTaskSEHFvn()
   if(fq2SmearingHisto) {delete fq2SmearingHisto;}
 }
 //_________________________________________________________________
-void  AliAnalysisTaskSEHFvn::SetMassLimits(Float_t range, Int_t pdg){
+void  AliAnalysisTaskHFv1::SetMassLimits(Float_t range, Int_t pdg){
   // Set limits for mass spectra plots
   Float_t mass=0;
   Int_t abspdg=TMath::Abs(pdg);
@@ -268,7 +272,7 @@ void  AliAnalysisTaskSEHFvn::SetMassLimits(Float_t range, Int_t pdg){
   fLowmasslimit = mass-range;
 }
 //_________________________________________________________________
-void  AliAnalysisTaskSEHFvn::SetMassLimits(Float_t lowlimit, Float_t uplimit){
+void  AliAnalysisTaskHFv1::SetMassLimits(Float_t lowlimit, Float_t uplimit){
   // Set limits for mass spectra plots
   if(uplimit>lowlimit)
     {
@@ -277,7 +281,7 @@ void  AliAnalysisTaskSEHFvn::SetMassLimits(Float_t lowlimit, Float_t uplimit){
     }
 }
 //________________________________________________________________________
-void AliAnalysisTaskSEHFvn::LocalInit()
+void AliAnalysisTaskHFv1::LocalInit()
 {
   // Initialization
 
@@ -321,7 +325,7 @@ void AliAnalysisTaskSEHFvn::LocalInit()
   return;
 }
 //________________________________________________________________________
-void AliAnalysisTaskSEHFvn::UserCreateOutputObjects()
+void AliAnalysisTaskHFv1::UserCreateOutputObjects()
 {
   // Create the output container
  
@@ -409,7 +413,7 @@ void AliAnalysisTaskSEHFvn::UserCreateOutputObjects()
           fOutput->Add(hMc2deltaphiB);
           TH2F * hMdeltaphiB=new TH2F(Form("hMdeltaphiB_pt%d%s",i,centrname.Data()),Form("Mass vs #Delta#phi (p_{t} bin %d %s);#Delta#phi;M (GeV/c^{2})",i,centrname.Data()),96,0,2*TMath::Pi(),fNMassBins,fLowmasslimit,fUpmasslimit);
           fOutput->Add(hMdeltaphiB);
-          if((fDecChannel != AliAnalysisTaskSEHFvn::kDplustoKpipi) &&(fDecChannel != AliAnalysisTaskSEHFvn::kDstartoKpipi)){
+          if((fDecChannel != AliAnalysisTaskHFv1::kDplustoKpipi) &&(fDecChannel != AliAnalysisTaskHFv1::kDstartoKpipi)){
             TH2F* hMc2deltaphiR=new TH2F(Form("hMc2deltaphiR_pt%d%s",i,centrname.Data()),Form("Mass vs cos2#Delta#phi (p_{t} bin %d %s);cos2#Delta#phi;M (GeV/c^{2})",i,centrname.Data()),100,-1.,1.,fNMassBins,fLowmasslimit,fUpmasslimit);
             fOutput->Add(hMc2deltaphiR);
             TH2F* hMdeltaphiR=new TH2F(Form("hMdeltaphiR_pt%d%s",i,centrname.Data()),Form("Mass vs #Delta#phi (p_{t} bin %d %s);#Delta#phi;M (GeV/c^{2})",i,centrname.Data()),96,0,2*TMath::Pi(),fNMassBins,fLowmasslimit,fUpmasslimit);
@@ -501,7 +505,7 @@ void AliAnalysisTaskSEHFvn::UserCreateOutputObjects()
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskSEHFvn::UserExec(Option_t */*option*/)
+void AliAnalysisTaskHFv1::UserExec(Option_t */*option*/)
 {
   
   // Execute analysis for current event:
@@ -583,7 +587,7 @@ void AliAnalysisTaskSEHFvn::UserExec(Option_t */*option*/)
   }
 
   if(!aod || !arrayProng) {
-    AliError("AliAnalysisTaskSEHFvn::UserExec:Branch not found!\n");
+    AliError("AliAnalysisTaskHFv1::UserExec:Branch not found!\n");
     return;
   }
   
@@ -601,14 +605,14 @@ void AliAnalysisTaskSEHFvn::UserExec(Option_t */*option*/)
     
     arrayMC =  (TClonesArray*)aod->GetList()->FindObject(AliAODMCParticle::StdBranchName());
     if(!arrayMC) {
-      AliWarning("AliAnalysisTaskSEHFvn::UserExec:MC particles branch not found!\n");
+      AliWarning("AliAnalysisTaskHFv1::UserExec:MC particles branch not found!\n");
       return;
     }
     
     // load MC header
     mcHeader =  (AliAODMCHeader*)aod->GetList()->FindObject(AliAODMCHeader::StdBranchName());
     if(!mcHeader) {
-      AliError("AliAnalysisTaskSEHFvn::UserExec:MC header branch not found!\n");
+      AliError("AliAnalysisTaskHFv1::UserExec:MC header branch not found!\n");
       return;
     }
   }
@@ -728,7 +732,7 @@ void AliAnalysisTaskSEHFvn::UserExec(Option_t */*option*/)
   
   AliEventplane *pl=aod->GetEventplane();
   if(!pl){
-    Printf("AliAnalysisTaskSEHFvn::UserExec:no eventplane! v2 analysis without eventplane not possible!\n");
+    Printf("AliAnalysisTaskHFv1::UserExec:no eventplane! v2 analysis without eventplane not possible!\n");
     fhEventsInfo->Fill(11);
     return;
   }
@@ -892,7 +896,7 @@ void AliAnalysisTaskSEHFvn::UserExec(Option_t */*option*/)
   return;
 }
 
-void AliAnalysisTaskSEHFvn::CreateSparseForEvShapeAnalysis() {
+void AliAnalysisTaskHFv1::CreateSparseForEvShapeAnalysis() {
   /// Sparse for v2 analysis as a function of q2
  
   Int_t nptbins=200;
@@ -958,7 +962,7 @@ void AliAnalysisTaskSEHFvn::CreateSparseForEvShapeAnalysis() {
 
 // Methods used in the UserExec
 
-void AliAnalysisTaskSEHFvn::CalculateInvMasses(AliAODRecoDecayHF* d,Float_t*& masses,Int_t& nmasses){
+void AliAnalysisTaskHFv1::CalculateInvMasses(AliAODRecoDecayHF* d,Float_t*& masses,Int_t& nmasses){
   //Calculates all the possible invariant masses for each candidate
   //NB: the implementation for each candidate is responsibility of the corresponding developer
 
@@ -1002,7 +1006,7 @@ void AliAnalysisTaskSEHFvn::CalculateInvMasses(AliAODRecoDecayHF* d,Float_t*& ma
 //NB: the implementation for each candidate is responsibility of the corresponding developer
 
 //******************************************************************************
-void AliAnalysisTaskSEHFvn::FillDplus(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t ptbin,Float_t deltaphi, const Float_t* masses,Int_t isSel,Int_t icentr, Double_t phiD, Double_t etaD, Double_t QA[2], Double_t QB[2]){
+void AliAnalysisTaskHFv1::FillDplus(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t ptbin,Float_t deltaphi, const Float_t* masses,Int_t isSel,Int_t icentr, Double_t phiD, Double_t etaD, Double_t QA[2], Double_t QB[2]){
   //D+ channel
   if(!isSel){
     if(fDebug>3)AliWarning("Candidate not selected\n");
@@ -1062,7 +1066,7 @@ void AliAnalysisTaskSEHFvn::FillDplus(AliAODRecoDecayHF* d,TClonesArray *arrayMC
 }
 
 //******************************************************************************
-void AliAnalysisTaskSEHFvn::FillD02p(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t ptbin,Float_t deltaphi, const Float_t* masses,Int_t isSel,Int_t icentr,Double_t phiD, Double_t etaD, Double_t QA[2], Double_t QB[2]){
+void AliAnalysisTaskHFv1::FillD02p(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t ptbin,Float_t deltaphi, const Float_t* masses,Int_t isSel,Int_t icentr,Double_t phiD, Double_t etaD, Double_t QA[2], Double_t QB[2]){
 
   //D0->Kpi channel
 
@@ -1185,7 +1189,7 @@ void AliAnalysisTaskSEHFvn::FillD02p(AliAODRecoDecayHF* d,TClonesArray *arrayMC,
 }
 
 //******************************************************************************
-void AliAnalysisTaskSEHFvn::FillDstar(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t ptbin,Float_t deltaphi, const Float_t* masses,Int_t isSel,Int_t icentr, Double_t phiD, Double_t etaD, Double_t QA[2], Double_t QB[2]){
+void AliAnalysisTaskHFv1::FillDstar(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t ptbin,Float_t deltaphi, const Float_t* masses,Int_t isSel,Int_t icentr, Double_t phiD, Double_t etaD, Double_t QA[2], Double_t QB[2]){
   //D* channel
   if(!isSel){
     if(fDebug>3)AliWarning("Candidate not selected\n");
@@ -1244,7 +1248,7 @@ void AliAnalysisTaskSEHFvn::FillDstar(AliAODRecoDecayHF* d,TClonesArray *arrayMC
 }
 
 //******************************************************************************
-void AliAnalysisTaskSEHFvn::FillDs(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t ptbin,Float_t deltaphi, const Float_t* masses,Int_t isSel,Int_t icentr, Double_t phiD, Double_t etaD, Double_t QA[2], Double_t QB[2]){
+void AliAnalysisTaskHFv1::FillDs(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t ptbin,Float_t deltaphi, const Float_t* masses,Int_t isSel,Int_t icentr, Double_t phiD, Double_t etaD, Double_t QA[2], Double_t QB[2]){
 
   //Ds channel
   if(!isSel){
@@ -1363,7 +1367,7 @@ void AliAnalysisTaskSEHFvn::FillDs(AliAODRecoDecayHF* d,TClonesArray *arrayMC,In
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskSEHFvn::SetEventPlaneMethod(Int_t method){
+void AliAnalysisTaskHFv1::SetEventPlaneMethod(Int_t method){
   // Interface method to set some specific cases
 
   switch (method){
@@ -1427,7 +1431,7 @@ void AliAnalysisTaskSEHFvn::SetEventPlaneMethod(Int_t method){
   }
 }
 //________________________________________________________________________
-Float_t AliAnalysisTaskSEHFvn::GetPhiInRange(Float_t phi){
+Float_t AliAnalysisTaskHFv1::GetPhiInRange(Float_t phi){
   // Sets the phi angle in the range 0-pi
   Float_t result=phi;
   while(result<0){
@@ -1440,7 +1444,7 @@ Float_t AliAnalysisTaskSEHFvn::GetPhiInRange(Float_t phi){
 }
 
 //________________________________________________________________________
-Float_t AliAnalysisTaskSEHFvn::GetEventPlane(AliAODEvent* aod, AliEventplane *pl, Double_t eventplaneqncorrTPC[3], Double_t eventplaneqncorrVZERO[3], Double_t q2){
+Float_t AliAnalysisTaskHFv1::GetEventPlane(AliAODEvent* aod, AliEventplane *pl, Double_t eventplaneqncorrTPC[3], Double_t eventplaneqncorrVZERO[3], Double_t q2){
   //Event plane
 
   Double_t rpangleTPC=0;
@@ -1641,7 +1645,7 @@ Float_t AliAnalysisTaskSEHFvn::GetEventPlane(AliAODEvent* aod, AliEventplane *pl
   return eventplane;
 }
 //________________________________________________________________________
-void AliAnalysisTaskSEHFvn::ComputeTPCEventPlane(AliAODEvent* aod, Double_t &rpangleTPC, Double_t &rpangleTPCpos,Double_t &rpangleTPCneg) const {
+void AliAnalysisTaskHFv1::ComputeTPCEventPlane(AliAODEvent* aod, Double_t &rpangleTPC, Double_t &rpangleTPCpos,Double_t &rpangleTPCneg) const {
   Int_t nTracks=aod->GetNumberOfTracks();
   Double_t qVec[2]={0.,0.};
   Double_t qVecPosEta[2]={0.,0.};
@@ -1678,7 +1682,7 @@ void AliAnalysisTaskSEHFvn::ComputeTPCEventPlane(AliAODEvent* aod, Double_t &rpa
   return;
 }
 //________________________________________________________________________
-Float_t AliAnalysisTaskSEHFvn::GetEventPlaneForCandidate(AliAODRecoDecayHF* d, AliEventplane *pl){
+Float_t AliAnalysisTaskHFv1::GetEventPlaneForCandidate(AliAODRecoDecayHF* d, AliEventplane *pl){
   // remove autocorrelations 
  
   TArrayF* qx = 0x0;
@@ -1794,7 +1798,7 @@ Float_t AliAnalysisTaskSEHFvn::GetEventPlaneForCandidate(AliAODRecoDecayHF* d, A
 
 }
 // //________________________________________________________________________
-// Float_t AliAnalysisTaskSEHFvn::GetEventPlaneFromV0(AliAODEvent *aodEvent){
+// Float_t AliAnalysisTaskHFv1::GetEventPlaneFromV0(AliAODEvent *aodEvent){
 //   // Compute event plane for VZERO - Obsolete, used for 2010 data
 
 //   Int_t centr=fRDCuts->GetCentrality(aodEvent);
@@ -1847,7 +1851,7 @@ Float_t AliAnalysisTaskSEHFvn::GetEventPlaneForCandidate(AliAODRecoDecayHF* d, A
 
 
 //________________________________________________________________________
-Float_t AliAnalysisTaskSEHFvn::GetEventPlaneForCandidateNewQnFw(AliAODRecoDecayHF* d, const TList *qnlist) {
+Float_t AliAnalysisTaskHFv1::GetEventPlaneForCandidateNewQnFw(AliAODRecoDecayHF* d, const TList *qnlist) {
     
   AliQnCorrectionsQnVector *theQnVectorCorr   = NULL;
   AliQnCorrectionsQnVector *theQnVectorUncorr = NULL;
@@ -1925,7 +1929,7 @@ Float_t AliAnalysisTaskSEHFvn::GetEventPlaneForCandidateNewQnFw(AliAODRecoDecayH
 }
 
 //________________________________________________________________________
-const AliQnCorrectionsQnVector *AliAnalysisTaskSEHFvn::GetQnVectorFromList(const TList *list,
+const AliQnCorrectionsQnVector *AliAnalysisTaskHFv1::GetQnVectorFromList(const TList *list,
 									   const char *subdetector,
 									   const char *expectedstep,
 									   const char *altstep)
@@ -1958,7 +1962,7 @@ const AliQnCorrectionsQnVector *AliAnalysisTaskSEHFvn::GetQnVectorFromList(const
 }
 
 //________________________________________________________________________
-Double_t AliAnalysisTaskSEHFvn::Getq2(TList* qnlist, Int_t q2meth)
+Double_t AliAnalysisTaskHFv1::Getq2(TList* qnlist, Int_t q2meth)
 {
   if(!qnlist) {return -1;}
   
@@ -1985,7 +1989,7 @@ Double_t AliAnalysisTaskSEHFvn::Getq2(TList* qnlist, Int_t q2meth)
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskSEHFvn::Setq2Smearing(TString smearingfilepath, TString histoname, Int_t smearingaxis) {
+void AliAnalysisTaskHFv1::Setq2Smearing(TString smearingfilepath, TString histoname, Int_t smearingaxis) {
   fq2Smearing=kTRUE;
   fq2SmearingAxis=smearingaxis;
   
@@ -1996,7 +2000,7 @@ void AliAnalysisTaskSEHFvn::Setq2Smearing(TString smearingfilepath, TString hist
 }
 
 //________________________________________________________________________
-Double_t AliAnalysisTaskSEHFvn::ComputeTPCq2(AliAODEvent* aod, Double_t &q2TPCfull, Double_t &q2TPCpos,Double_t &q2TPCneg) const {
+Double_t AliAnalysisTaskHFv1::ComputeTPCq2(AliAODEvent* aod, Double_t &q2TPCfull, Double_t &q2TPCpos,Double_t &q2TPCneg) const {
   /// Compute the q2 for ESE starting from TPC tracks
   /// Option to reject a fraction of tracks to emulate resolution effects
 
@@ -2055,7 +2059,7 @@ Double_t AliAnalysisTaskSEHFvn::ComputeTPCq2(AliAODEvent* aod, Double_t &q2TPCfu
 
 
 //________________________________________________________________________
-void AliAnalysisTaskSEHFvn::Terminate(Option_t */*option*/)
+void AliAnalysisTaskHFv1::Terminate(Option_t */*option*/)
 {
   // Terminate analysis
   //

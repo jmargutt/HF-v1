@@ -1,17 +1,20 @@
-#ifndef AliAnalysisTaskSEHFvn_H
-#define AliAnalysisTaskSEHFvn_H
+#ifndef AliAnalysisTaskHFv1_H
+#define AliAnalysisTaskHFv1_H
 
 /* Copyright(c) 1998-2010, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-//*************************************************************************
-// AliAnalysisTaskSEHFvn gives the needed tools for the D
-// mesons vn analysis
-// Authors: Chiara Bianchin, Robert Grajcarek, Giacomo Ortona, 
+//**************************************************************************
+// AliAnalysisTaskHFv1 directed flow of D mesons with scalar
+// product method (modified from AliAnalysisTaskHFv1)
+// Authors: Andrea Dubla, Jacopo Margutti
+//
+// AliAnalysisTaskHFv1 gives the needed tools for the D
+// mesons vn analysis with event plane method
+// Authors: Chiara Bianchin, Robert Grajcarek, Giacomo Ortona,
 //          Carlos Perez Lara, Francesco Prino, Anastasia Barbano,
 //          Fabrizio Grosa, Andrea Festanti
-//
-//*************************************************************************
+//**************************************************************************
 
 /* $Id$ */
 #include "THnSparse.h"
@@ -27,7 +30,7 @@ class AliMultiDimVector;
 class AliRDHFCuts;
 class TVector2;
 
-class AliAnalysisTaskSEHFvn : public AliAnalysisTaskSE
+class AliAnalysisTaskHFv1 : public AliAnalysisTaskSE
 {
     
  public:
@@ -39,10 +42,10 @@ class AliAnalysisTaskSEHFvn : public AliAnalysisTaskSE
   enum EventPlaneDet{kNone=-1,kFullTPC,kPosTPC,kNegTPC,kFullV0,kV0A,kV0C};
   //  enum SubEvents{kFullTPC,kPosTPC,kNegTPC,kSingleV0Side}; //Sub-events for V0 EP
     
-  AliAnalysisTaskSEHFvn();
-  AliAnalysisTaskSEHFvn(const char *name, AliRDHFCuts *rdCuts, Int_t decaychannel);
+  AliAnalysisTaskHFv1();
+  AliAnalysisTaskHFv1(const char *name, AliRDHFCuts *rdCuts, Int_t decaychannel);
     
-  virtual ~AliAnalysisTaskSEHFvn();
+  virtual ~AliAnalysisTaskHFv1();
 
   void SetEventPlaneDetector(Int_t det){
     fEvPlaneDet=det;
@@ -62,7 +65,7 @@ class AliAnalysisTaskSEHFvn : public AliAnalysisTaskSE
   void SetAfterBurner(AliHFAfterBurner *ab){fAfterBurner=ab;}
   void SetEtaGapFeatureForEventplaneFromTracks (Bool_t etaGap) {fEtaGap = etaGap;}
   void SetCentralityBinWidthPerMil(Int_t w){fCentBinSizePerMil=w;}
-  void SetFlowMethod(AliAnalysisTaskSEHFvn::FlowMethod meth){fFlowMethod=meth;}
+  void SetFlowMethod(AliAnalysisTaskHFv1::FlowMethod meth){fFlowMethod=meth;}
   void SetNormMethod(TString normmethod="QoverQlength") {fNormMethod=normmethod;}
 
   void SetHarmonic(Int_t n){fHarmonic=n;}
@@ -111,8 +114,8 @@ class AliAnalysisTaskSEHFvn : public AliAnalysisTaskSE
     
  private:
     
-  AliAnalysisTaskSEHFvn(const AliAnalysisTaskSEHFvn &source);
-  AliAnalysisTaskSEHFvn& operator=(const AliAnalysisTaskSEHFvn& source);
+  AliAnalysisTaskHFv1(const AliAnalysisTaskHFv1 &source);
+  AliAnalysisTaskHFv1& operator=(const AliAnalysisTaskHFv1& source);
     
   void CalculateInvMasses(AliAODRecoDecayHF* d,Float_t* &masses,Int_t& nmasses);
     
@@ -172,9 +175,9 @@ class AliAnalysisTaskSEHFvn : public AliAnalysisTaskSE
   Int_t fq2SmearingAxis;        // axis of the smearing histogram corresponding to the q2 used for the analysis
   Double_t fScalProdLimit;      // max value for the scalar product histograms
   
-  AliAnalysisTaskSEHFvn::FlowMethod fFlowMethod;
+  AliAnalysisTaskHFv1::FlowMethod fFlowMethod;
     
-  ClassDef(AliAnalysisTaskSEHFvn,4); // AliAnalysisTaskSE for the HF v2 analysis
+  ClassDef(AliAnalysisTaskHFv1,4); // AliAnalysisTaskSE for the HF v2 analysis
 };
 
 #endif
