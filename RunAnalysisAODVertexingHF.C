@@ -16,7 +16,7 @@ void RunAnalysisAODVertexingHF()
     //
     
     
-    gSystem->SetIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT -I$ALICE_ROOT/include -I$ALICE_PHYSICS -I$ALICE_PHYSICS/include -I$ALICE_ROOT/ITS -I$ALICE_ROOT/TPC -I$ALICE_ROOT/CONTAINERS -I$ALICE_ROOT/STEER/STEER -I$ALICE_ROOT/STEER/STEERBase -I$ALICE_ROOT/STEER/ESD -I$ALICE_ROOT/STEER/AOD -I$ALICE_ROOT/TRD -I$ALICE_ROOT/macros -I$ALICE_ROOT/ANALYSIS  -I$ALICE_PHYSICS/OADB -I$ALICE_PHYSICS/PWGHF -I$ALICE_PHYSICS/PWGHF/base -I$ALICE_PHYSICS/PWGHF/vertexingHF -I$ALICE_PHYSICS/PWG/FLOW/Base -I$ALICE_PHYSICS/PWG/FLOW/Tasks -I$ALICE_PHYSICS/PWG -g");
+    gSystem->SetIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT -I$ALICE_ROOT/include -I$ALICE_PHYSICS -I$ALICE_PHYSICS/include -I$ALICE_ROOT/ITS -I$ALICE_ROOT/TPC -I$ALICE_ROOT/CONTAINERS -I$ALICE_ROOT/STEER/STEER -I$ALICE_ROOT/STEER/STEERBase -I$ALICE_ROOT/STEER/ESD -I$ALICE_ROOT/STEER/AOD -I$ALICE_ROOT/TRD -I$ALICE_ROOT/macros -I$ALICE_ROOT/ANALYSIS  -I$ALICE_PHYSICS/OADB -I$ALICE_PHYSICS/PWGHF -I$ALICE_PHYSICS/PWGHF/base -I$ALICE_PHYSICS/PWGHF/vertexingHF -I$ALICE_PHYSICS/PWG/FLOW/Base -I$ALICE_PHYSICS/PWG/FLOW/Tasks -I$ALICE_PHYSICS/PWG -I$ALICE_PHYSICS/PWGPP -g");
     
     //
     TString trainName = "D2H";
@@ -25,7 +25,7 @@ void RunAnalysisAODVertexingHF()
     Long64_t nentries=123567890,firstentry=0;
     Bool_t useParFiles=kFALSE;
     Bool_t useAlienPlugin=kTRUE;
-    TString pluginmode="terminate";
+    TString pluginmode="test";
     Bool_t saveProofToAlien=kFALSE;
     TString proofOutdir = "";
     TString loadMacroPath="$ALICE_PHYSICS/PWGHF/vertexingHF/macros/";
@@ -62,7 +62,7 @@ void RunAnalysisAODVertexingHF()
     
     
     // AliRoot libraries
-    if(analysisMode=="local" || analysisMode=="grid") {
+    if(analysisMode=="local" || analysisMode=="grid" || analysisMode=="test") {
         TString loadLibraries="LoadLibraries.C"; loadLibraries.Prepend(loadMacroPath.Data());
         gROOT->LoadMacro(loadLibraries.Data());
         LoadLibraries(useParFiles);
@@ -183,7 +183,10 @@ void RunAnalysisAODVertexingHF()
     AddTaskPhysicsSelection(kFALSE,kTRUE);
     gROOT->LoadMacro("$ALICE_PHYSICS/OADB/COMMON/MULTIPLICITY/macros/AddTaskMultSelection.C");
     AliMultSelectionTask * taskMu = AddTaskMultSelection(kFALSE);
-    
+  
+//    gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrectionsInterface/macros/AddTaskFlowQnVectorCorrectionsToLegoTrainNewDetConfig.C");
+//    AddTaskFlowQnVectorCorrectionsToLegoTrainNewDetConfig("alien:///alice/cern.ch/user/p/pwg_hf/common/QnConfig/LHC15o/pass1");
+  
     TString taskName;
     
     ////// ADD THE FULL D2H TRAIN
@@ -199,11 +202,17 @@ void RunAnalysisAODVertexingHF()
     //AliAnalysisTaskSEHFQA *QATask = AddTaskHFQA(AliAnalysisTaskSEHFQA::kDplustoKpipi, "DplustoKpipiCuts_kINT7.root", kFALSE, kFALSE, 1, "");
     
     //D0 Spectra
-    gROOT->LoadMacro("$ALICE_PHYSICS/PWGHF/vertexingHF/macros/AddTaskD0Mass.C");
+//    gROOT->LoadMacro("$ALICE_PHYSICS/PWGHF/vertexingHF/charmFlow/AddTaskHFvn.C");
+  gROOT->LoadMacro("/Users/jmargutti/workdir/ZDC-Event-Plane/AliAnalysisTaskZDCEP.cxx++");
+  gROOT->LoadMacro("/Users/jmargutti/workdir/ZDC-Event-Plane/AddTaskZDCEP.C");
+  AddTaskZDCEP("alien:///alice/cern.ch/user/j/jmargutt/15oHI_ZDCcalibVar_CenVtxCen_VtxRbR_Ecom.root");
+  
+  gROOT->LoadMacro("AliAnalysisTaskHFv1.cxx++");
+  gROOT->LoadMacro("AddTaskHFv1.C");
   //  AliAnalysisTaskFlowD2H *DZero = AddTaskD0Mass("alien:///alice/cern.ch/user/a/adubla/D0toKpiCutsPbPb1040NoRecVtxPileupRej.root", "FirstTest_D0_PbPb", AliRDHFCuts::kD0Cuts, 2,kTRUE,kTRUE,kFALSE,kFALSE,kFALSE,1,0,0,0,0,0);
-    AliAnalysisTaskSED0Mass *DZero = AddTaskD0Mass( 0, kFALSE, kTRUE, kFALSE, 1, 0, 10, 40, "FirstTest_D0_PbPb", "alien:///alice/cern.ch/user/a/adubla/D0toKpiCutsPbPb1040NoRecVtxPileupRej.root", "D0toKpiCuts" );
- 
-    
+//  AliAnalysisTaskSEHFvn *DZero = AddTaskHFvn(1,"alien:///alice/cern.ch/user/j/jmargutt/HF/D0toKpi2011RefCutsPbPb1040NoRecVtxNoPileupRej_cent.root",AliAnalysisTaskSEHFvn::kD0toKpi, "D0toKpiCuts",kFALSE, "_test",AliAnalysisTaskSEHFvn::kVZERO,10.,40.,kTRUE,AliAnalysisTaskSEHFvn::kSP,"QoverM");
+  AliAnalysisTaskHFv1 *DZero = AddTaskHFv1(1,kTRUE,"alien:///alice/cern.ch/user/j/jmargutt/HF/D0toKpi2011RefCutsPbPb1040NoRecVtxNoPileupRej_cent.root",AliAnalysisTaskHFv1::kD0toKpi, "D0toKpiCuts",kFALSE, "_test",AliAnalysisTaskHFv1::kZDC,10.,40.,kFALSE,AliAnalysisTaskHFv1::kSP,"QoverM");
+  
     //HERE SET THE DATA MEMBRS........
     
     //taskName="AddTaskD0Mass.C"; taskName.Prepend(loadMacroPath.Data());
@@ -261,12 +270,12 @@ AliAnalysisGrid* CreateAlienHandler(TString pluginmode="test",Bool_t useParFiles
     AliAnalysisAlien *plugin = new AliAnalysisAlien();
     // Set the run mode (can be "full", "test", "offline", "submit" or "terminate")
     plugin->SetRunMode(pluginmode.Data());
-    plugin->SetUser("adubla");
+//    plugin->SetUser("adubla");
     // Set versions of used packages
     plugin->SetAPIVersion("V1.1x");
    // plugin->SetROOTVersion("v5-34-30");
-    plugin->SetAliPhysicsVersion("vAN-20170315-1");
-    plugin->SetNtestFiles(2);
+    plugin->SetAliPhysicsVersion("vAN-20170406-1");
+    plugin->SetNtestFiles(1);
     //   gROOT->LoadMacro("$ALICE_ROOT/PWGHF/vertexingHF/AddGoodRuns.C");
     
     // Declare input data to be processed.
@@ -301,8 +310,8 @@ AliAnalysisGrid* CreateAlienHandler(TString pluginmode="test",Bool_t useParFiles
     
     
     Int_t cyclenumber = 1;//5
-    Int_t runcycle[] = {0,10,90};
-    
+    Int_t runcycle[] = {0,1,90};
+  
     Int_t runArray[] = {246994, 246991, 246989, 246984, 246982, 246948, 246945, 246928, 246851, 246847, 246846, 246845, 246844, 246810, 246809, 246808, 246807, 246805, 246804, 246766, 246765, 246763, 246760, 246759, 246758, 246757, 246751, 246750, 246676, 246675, 246495, 246493, 246488, 246487, 246434, 246431, 246424, 246276, 246275, 246272, 246271, 246225, 246222, 246217, 246185, 246182, 246181, 246180, 246178, 246153, 246152, 246151, 246115, 246113, 246087, 246053, 246052, 246049, 246048, 246042, 246037, 246036, 246012, 246003, 246001, 245954, 245952, 245949, 245923, 245833, 245831, 245829, 245705, 245702, 245692, 245683}; // bad runs are commented out - 89 entries
     for (Int_t i =  runcycle[cyclenumber - 1]; i < runcycle[cyclenumber] ; i++)
     {
@@ -362,17 +371,17 @@ AliAnalysisGrid* CreateAlienHandler(TString pluginmode="test",Bool_t useParFiles
      */
     //
     // Define alien work directory where all files will be copied. Relative to alien $HOME.
-    plugin->SetGridWorkingDir("D0PbPbFirstTest/LHC150_STDCuts_03042016");
+    plugin->SetGridWorkingDir("D0v1/test0");
     // Name of executable
     plugin->SetExecutable("myHFanalysis.sh");
     // Declare alien output directory. Relative to working directory.
     plugin->SetGridOutputDir("output"); // In this case will be $HOME/work/output
     // Declare the analysis source files names separated by blancs. To be compiled runtime
     // using ACLiC on the worker nodes.
-    //plugin->SetAnalysisSource("AliAnalysisTaskSEDStarSpectra2.cxx");
+    plugin->SetAnalysisSource("AliAnalysisTaskHFv1.cxx AliAnalysisTaskZDCEP.cxx");
     // Declare all libraries (other than the default ones for the framework. These will be
     // loaded by the generated analysis macro. Add all extra files (task .cxx/.h) here.
-    plugin->SetAdditionalLibs("libPWGflowBase.so libPWGflowTasks.so libPWGHFbase.so libPWGHFvertexingHF.so libGui.so libRAWDatabase.so libCDB.so libSTEER.so libTRDbase.so libPWGTRD.so");
+    plugin->SetAdditionalLibs("libPWGflowBase.so libPWGflowTasks.so libPWGHFbase.so libPWGHFvertexingHF.so libGui.so libRAWDatabase.so libCDB.so libSTEER.so libTRDbase.so libPWGTRD.so AliAnalysisTaskHFv1.cxx AliAnalysisTaskHFv1.h AliAnalysisTaskZDCEP.cxx AliAnalysisTaskZDCEP.h");
     // use par files
     if(useParFiles) {
         plugin->EnablePackage("STEERBase.par");
@@ -385,13 +394,13 @@ AliAnalysisGrid* CreateAlienHandler(TString pluginmode="test",Bool_t useParFiles
         plugin->EnablePackage("PWGHFbase.par");
         plugin->EnablePackage("PWGHFvertexingHF.par");
     }
-    plugin->AddIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT -I$ALICE_ROOT/include -I$ALICE_PHYSICS -I$ALICE_PHYSICS/include -I$ALICE_ROOT/ITS -I$ALICE_ROOT/TPC -I$ALICE_ROOT/CONTAINERS -I$ALICE_ROOT/STEER/STEER -I$ALICE_ROOT/STEER/STEERBase -I$ALICE_ROOT/STEER/ESD -I$ALICE_ROOT/STEER/AOD -I$ALICE_ROOT/TRD -I$ALICE_ROOT/macros -I$ALICE_ROOT/ANALYSIS  -I$ALICE_PHYSICS/OADB -I$ALICE_PHYSICS/PWGHF -I$ALICE_PHYSICS/PWGHF/base -I$ALICE_PHYSICS/PWGHF/vertexingHF -I$ALICE_PHYSICS/PWG/FLOW/Base -I$ALICE_PHYSICS/PWG/FLOW/Tasks -I$ALICE_PHYSICS/PWG -g");
+    plugin->AddIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT -I$ALICE_ROOT/include -I$ALICE_PHYSICS -I$ALICE_PHYSICS/include -I$ALICE_ROOT/ITS -I$ALICE_ROOT/TPC -I$ALICE_ROOT/CONTAINERS -I$ALICE_ROOT/STEER/STEER -I$ALICE_ROOT/STEER/STEERBase -I$ALICE_ROOT/STEER/ESD -I$ALICE_ROOT/STEER/AOD -I$ALICE_ROOT/TRD -I$ALICE_ROOT/macros -I$ALICE_ROOT/ANALYSIS  -I$ALICE_PHYSICS/OADB -I$ALICE_PHYSICS/PWGHF -I$ALICE_PHYSICS/PWGHF/base -I$ALICE_PHYSICS/PWGHF/vertexingHF -I$ALICE_PHYSICS/PWG/FLOW/Base -I$ALICE_PHYSICS/PWG/FLOW/Tasks -I$ALICE_PHYSICS/PWG -I$ALICE_PHYSICS/PWGPP -g");
 
     plugin->SetSplitMaxInputFileNumber(5);
     plugin->SetNtestFiles(1);
     plugin->SetDefaultOutputs(kTRUE);
     // merging via jdl
-    plugin->SetMergeViaJDL(kFALSE);
+    plugin->SetMergeViaJDL(kTRUE);
     plugin->SetOneStageMerging(kFALSE);
     plugin->SetMaxMergeStages(2);
     

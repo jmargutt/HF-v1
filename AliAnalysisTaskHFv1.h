@@ -22,6 +22,7 @@
 #include "AliAnalysisVertexingHF.h"
 #include "AliHFAfterBurner.h"
 #include "AliQnCorrectionsQnVector.h"
+#include "AliAnalysisTaskZDCEP.h"
 
 class TH1F;
 class TH2F;
@@ -29,6 +30,7 @@ class TH2D;
 class AliMultiDimVector;
 class AliRDHFCuts;
 class TVector2;
+class AliAnalysisTaskZDCEP;
 
 class AliAnalysisTaskHFv1 : public AliAnalysisTaskSE
 {
@@ -140,7 +142,10 @@ class AliAnalysisTaskHFv1 : public AliAnalysisTaskSE
   AliRDHFCuts *fRDCuts;         //cut values (saved in slot 3)
   Float_t fLowmasslimit;        //lower inv mass limit for histos
   Float_t fUpmasslimit;         //upper inv mass limit for histos
+  Float_t fLowEtaLimit;         //lower limit in eta
+  Float_t fUpEtaLimit;          //upper limit in eta
   Int_t fNPtBins;               //number of pt bins
+  Int_t fNEtaBins;              //number of eta bins
   Int_t fNMassBins;             //number of bins in the mass histograms
   Bool_t fReadMC;               //flag for access to MC
   Bool_t fUseAfterBurner;      //enable afterburning
