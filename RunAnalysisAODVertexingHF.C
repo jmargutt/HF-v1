@@ -203,8 +203,8 @@ void RunAnalysisAODVertexingHF()
     
     //D0 Spectra
 //    gROOT->LoadMacro("$ALICE_PHYSICS/PWGHF/vertexingHF/charmFlow/AddTaskHFvn.C");
-  gROOT->LoadMacro("/Users/jmargutti/workdir/ZDC-Event-Plane/AliAnalysisTaskZDCEP.cxx++");
-  gROOT->LoadMacro("/Users/jmargutti/workdir/ZDC-Event-Plane/AddTaskZDCEP.C");
+  gROOT->LoadMacro("AliAnalysisTaskZDCEP.cxx++");
+  gROOT->LoadMacro("AddTaskZDCEP.C");
   AddTaskZDCEP("alien:///alice/cern.ch/user/j/jmargutt/15oHI_ZDCcalibVar_CenVtxCen_VtxRbR_Ecom.root");
   
   gROOT->LoadMacro("AliAnalysisTaskHFv1.cxx++");
