@@ -66,6 +66,8 @@ AliAnalysisTaskHFv1 *AddTaskHFv1(Int_t harm, Bool_t separateD0D0bar, TString fil
     
   // Analysis task
   AliAnalysisTaskHFv1 *v2Task = new AliAnalysisTaskHFv1("HFvnAnalysis",analysiscuts,decCh);
+  v2Task->SetScalProdLimit(1.75);
+  v2Task->SetCentralityBinWidthPerMil(100);
   v2Task->SetHarmonic(harm);
   v2Task->SetReadMC(readMC);
   v2Task->SetSeparateD0D0bar(separateD0D0bar);

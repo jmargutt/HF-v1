@@ -104,8 +104,7 @@ class AliAnalysisTaskHFv1 : public AliAnalysisTaskSE
   void Setq2Method(Int_t q2method) {fq2Meth=q2method;}
   void Setq2Smearing(TString smearingfilepath, TString histoname, Int_t smearingaxis);
   void SetScalProdLimit(Double_t limit=0.3) {
-    if(limit<1) fScalProdLimit=limit;
-    else fScalProdLimit=1;
+    fScalProdLimit=limit;
   }
   
   // Implementation of interface methods
