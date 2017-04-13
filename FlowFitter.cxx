@@ -456,7 +456,7 @@ void FlowFitter::DrawFit(TString cvname) const{
   }
  
   hdraw->SetMinimum(0);
-  hdraw->GetXaxis()->SetRangeUser(1.71,2.055);
+//  hdraw->GetXaxis()->SetRangeUser(1.71,2.055);
   hdraw->SetMarkerStyle(20);
   Printf(">>>>>>>>>>>Drawing histo with name %s in canvas %s", hdraw->GetName(), c->GetName());
   hdraw->Draw("PE");
@@ -495,7 +495,7 @@ void FlowFitter::DrawFit(TString cvname) const{
   gPad->SetTopMargin(0); 
   hdraw=GetHistoClone(1); hdraw->SetTitle(""); hdraw->GetYaxis()->SetRangeUser(-0.22,0.98); hdraw->Draw("E");  
   hdraw->SetMarkerStyle(20);
-  hdraw->GetXaxis()->SetRangeUser(1.71,2.05);
+ // hdraw->GetXaxis()->SetRangeUser(1.71,2.05);
   hdraw->Draw("PE");
 
   if (!fIsPtFit) {
