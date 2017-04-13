@@ -22,8 +22,8 @@ void RunAnalysisAODVertexingHF()
   Long64_t nentries=123567890,firstentry=0;
   Bool_t useParFiles=kFALSE;
   Bool_t useAlienPlugin=kTRUE;
-  TString pluginmode="terminate";
-  Bool_t mergeViaJDL=kFALSE;
+  TString pluginmode="test";
+  Bool_t mergeViaJDL=kTRUE;
   Bool_t saveProofToAlien=kFALSE;
   TString proofOutdir = "";
   TString loadMacroPath="$ALICE_PHYSICS/PWGHF/vertexingHF/macros/";
@@ -180,9 +180,7 @@ void RunAnalysisAODVertexingHF()
 //  gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrectionsInterface/macros/AddTaskFlowQnVectorCorrectionsToLegoTrainNewDetConfig.C");
 //  AddTaskFlowQnVectorCorrectionsToLegoTrainNewDetConfig("alien:///alice/cern.ch/user/p/pwg_hf/common/QnConfig/LHC15o/pass1");
   
-  
-  gROOT->LoadMacro("AliAnalysisTaskZDCEP.cxx++");
-  gROOT->LoadMacro("AddTaskZDCEP.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGCF/FLOW/macros/AddTaskZDCEP.C");
   AddTaskZDCEP("alien:///alice/cern.ch/user/j/jmargutt/15oHI_ZDCcalibVar_CenVtxCen_VtxRbR_Ecom.root");
   
   gROOT->LoadMacro("AliAnalysisTaskHFv1.cxx++");
@@ -244,7 +242,7 @@ AliAnalysisGrid* CreateAlienHandler(TString pluginmode="test",Bool_t useParFiles
   // OR plugin->SetFriendChainName("deltas/AliAOD.VertexingHF.root");
   // Adds only the good runs from the Monalisa Run Condition Table
   // More than one period can be added but the period name has to be removed from GridDataDir (to be tested)
-  Int_t totruns=15;
+  Int_t totruns=1;
   plugin->SetRunPrefix("000");
 //  plugin->AddRunNumber(245833);
   //    plugin->AddRunNumber(195531);
@@ -265,11 +263,11 @@ AliAnalysisGrid* CreateAlienHandler(TString pluginmode="test",Bool_t useParFiles
   
   
   Int_t cyclenumber = 1;// 246994
-  Int_t runcycle[] = {0,15,90};
+  Int_t runcycle[] = {0,1,90};
   
-//  Int_t runArray[] = {246984};
+  Int_t runArray[] = {246984};
   
-  Int_t runArray[] = {246991, 246989, 246984, 246982, 246948, 246945, 246928, 246851, 246847, 246846, 246845, 246844, 246810, 246809, 246808, 246807, 246805, 246804, 246766, 246765, 246763, 246760, 246759, 246758, 246757, 246751, 246750, 246676, 246675, 246495, 246493, 246488, 246487, 246434, 246431, 246424, 246276, 246275, 246272, 246271, 246225, 246222, 246217, 246185, 246182, 246181, 246180, 246178, 246153, 246152, 246151, 246115, 246113, 246087, 246053, 246052, 246049, 246048, 246042, 246037, 246036, 246012, 246003, 246001, 245954, 245952, 245949, 245923, 245833, 245831, 245829, 245705, 245702, 245692, 245683}; // bad runs are commented out - 89 entries
+//  Int_t runArray[] = {246991, 246989, 246984, 246982, 246948, 246945, 246928, 246851, 246847, 246846, 246845, 246844, 246810, 246809, 246808, 246807, 246805, 246804, 246766, 246765, 246763, 246760, 246759, 246758, 246757, 246751, 246750, 246676, 246675, 246495, 246493, 246488, 246487, 246434, 246431, 246424, 246276, 246275, 246272, 246271, 246225, 246222, 246217, 246185, 246182, 246181, 246180, 246178, 246153, 246152, 246151, 246115, 246113, 246087, 246053, 246052, 246049, 246048, 246042, 246037, 246036, 246012, 246003, 246001, 245954, 245952, 245949, 245923, 245833, 245831, 245829, 245705, 245702, 245692, 245683}; // bad runs are commented out - 89 entries
   for (Int_t i =  runcycle[cyclenumber - 1]; i < runcycle[cyclenumber] ; i++)
   {
     if (i == sizeof(runArray) / sizeof(runArray[1])) break;
@@ -336,10 +334,10 @@ AliAnalysisGrid* CreateAlienHandler(TString pluginmode="test",Bool_t useParFiles
   plugin->SetGridOutputDir("output"); // In this case will be $HOME/work/output
   // Declare the analysis source files names separated by blancs. To be compiled runtime
   // using ACLiC on the worker nodes.
-  plugin->SetAnalysisSource("AliAnalysisTaskZDCEP.cxx AliAnalysisTaskHFv1.cxx");
+  plugin->SetAnalysisSource("AliAnalysisTaskHFv1.cxx");
   // Declare all libraries (other than the default ones for the framework. These will be
   // loaded by the generated analysis macro. Add all extra files (task .cxx/.h) here.
-  plugin->SetAdditionalLibs("libPWGflowBase.so libPWGflowTasks.so libPWGHFbase.so libPWGHFvertexingHF.so libGui.so libRAWDatabase.so libCDB.so libSTEER.so libTRDbase.so libPWGTRD.so AliAnalysisTaskZDCEP.cxx AliAnalysisTaskZDCEP.h AliAnalysisTaskHFv1.cxx AliAnalysisTaskHFv1.h");
+  plugin->SetAdditionalLibs("libPWGflowBase.so libPWGflowTasks.so libPWGHFbase.so libPWGHFvertexingHF.so libGui.so libRAWDatabase.so libCDB.so libSTEER.so libTRDbase.so libPWGTRD.so AliAnalysisTaskHFv1.cxx AliAnalysisTaskHFv1.h");
   // use par files
   if(useParFiles) {
     plugin->EnablePackage("STEERBase.par");

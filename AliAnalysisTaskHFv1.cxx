@@ -220,8 +220,6 @@ AliAnalysisTaskHFv1::AliAnalysisTaskHFv1(const char *name,AliRDHFCuts *rdCuts,In
   if(pdg==413) SetMassLimits((Float_t)0.1,(Float_t)0.2);
   else SetMassLimits((Float_t)0.2,pdg); //check range
   fNPtBins=fRDCuts->GetNPtBins();
-  // hard-coded: force fNPtBins=1
-  fNPtBins=1;
   
   DefineInput(1,AliFlowEventSimple::Class());
 
@@ -463,27 +461,25 @@ void AliAnalysisTaskHFv1::UserCreateOutputObjects()
     else if(fFlowMethod==kSP) {
       TString SPsuffix1="";
       TString SPsuffix2="";
-      TString SPsuffix3="QAQB";
+      TString SPsuffix3="QAQC";
       if(fEvPlaneDet==kFullTPC || fEvPlaneDet==kPosTPC || fEvPlaneDet==kNegTPC) { //two sub-event formula
         SPsuffix1="uAQB";
         SPsuffix2="uBQA";
       }
       else { // three sub-event formula A,B -> sub-events for Q-vetors C -> sub-event for D-mesons
-        SPsuffix1="uCQA";
-        SPsuffix2="uCQB";
+        SPsuffix1="uQA";
+        SPsuffix2="uQC";
       }
-      for(Int_t i=0;i<fNPtBins;i++){
-        Int_t nBins[4] = {100,fNMassBins,4,3};
-        Double_t xmin[4] = {-fScalProdLimit,fLowmasslimit,-0.8,0.};
-        Double_t xmax[4] = {fScalProdLimit,fUpmasslimit,0.8,3.};
-        THnSparseD* hMassScalProd1 = new THnSparseD(Form("hMassScalProd%s_pt%d%s",SPsuffix1.Data(),i,centrname.Data()),Form("Mass vs hScalProd%s (p_{t} bin %d %s);%s;M (GeV/c^{2})",SPsuffix1.Data(),i,centrname.Data(),SPsuffix1.Data()),4,nBins,xmin,xmax);
-        hMassScalProd1->Sumw2();
-        fOutput->Add(hMassScalProd1);
-        THnSparseD* hMassScalProd2 = new THnSparseD(Form("hMassScalProd%s_pt%d%s",SPsuffix2.Data(),i,centrname.Data()),Form("Mass vs hScalProd%s (p_{t} bin %d %s);%s;M (GeV/c^{2})",SPsuffix2.Data(),i,centrname.Data(),SPsuffix2.Data()),4,nBins,xmin,xmax);
-        hMassScalProd2->Sumw2();
-        fOutput->Add(hMassScalProd2);
-      }
-      TH1F* hScalProdDenom=new TH1F(Form("hScalProd%s_%s",SPsuffix3.Data(),centrname.Data()),Form("hScalProd%s (%s);%s",SPsuffix3.Data(),centrname.Data(),SPsuffix3.Data()),100,-fScalProdLimit*fScalProdLimit,fScalProdLimit*fScalProdLimit);
+      Int_t nBins[5] = {100,fNMassBins,50,4,3};
+      Double_t xmin[5] = {-fScalProdLimit,fLowmasslimit,0.,-0.8,0.};
+      Double_t xmax[5] = {fScalProdLimit,fUpmasslimit,50.,0.8,3.};
+      THnSparseD* hMassScalProd1 = new THnSparseD(Form("hMassScalProd%s_%s",SPsuffix1.Data(),centrname.Data()),Form("Mass vs hScalProd%s ;%s;M (GeV/c^{2})",SPsuffix1.Data(),centrname.Data()),5,nBins,xmin,xmax);
+      hMassScalProd1->Sumw2();
+      fOutput->Add(hMassScalProd1);
+      THnSparseD* hMassScalProd2 = new THnSparseD(Form("hMassScalProd%s_%s",SPsuffix2.Data(),centrname.Data()),Form("Mass vs hScalProd%s ;%s;M (GeV/c^{2})",SPsuffix2.Data(),centrname.Data()),5,nBins,xmin,xmax);
+      hMassScalProd2->Sumw2();
+      fOutput->Add(hMassScalProd2);
+      TProfile* hScalProdDenom = new TProfile(Form("hScalProd%s",SPsuffix3.Data()),Form("hScalProd%s",SPsuffix3.Data()),(Int_t)1000./fCentBinSizePerMil,0.,100.);
       fOutput->Add(hScalProdDenom);
     }
     else if (fFlowMethod==kEvShape){
@@ -814,7 +810,7 @@ void AliAnalysisTaskHFv1::UserExec(Option_t */*option*/)
     else {
       //fill histograms for denominator in SP formula
       Double_t scalprod=QA[0]*QB[0]+QA[1]*QB[1];
-      ((TH1F*)fOutput->FindObject(Form("hScalProdQAQB_%s",fCentrBinName.Data())))->Fill(scalprod);
+      ((TProfile*)fOutput->FindObject("hScalProdQAQC"))->Fill(centr,scalprod);
     }
   }
   if(fDebug>2)printf("Loop on D candidates\n");
@@ -880,15 +876,16 @@ void AliAnalysisTaskHFv1::UserExec(Option_t */*option*/)
     
     Double_t phi=d->Phi();
     Double_t eta=d->Eta();
+    Double_t pt=d->Pt();
     if(fReadMC&&fUseAfterBurner)phi=fAfterBurner->GetNewAngle(d,arrayMC);
     Float_t deltaphi  = GetPhiInRange(phi-eventplane);
     
     //fill the histograms with the appropriate method
     if(fFlowMethod!=kEvShape) {
-      if(fDecChannel==0)FillDplus(d,arrayMC,ptbin,deltaphi,invMass,isSelected,icentr,phi,eta,QA,QB);
-      else if(fDecChannel==1)FillD02p(d,arrayMC,ptbin,deltaphi,invMass,isSelected,icentr,phi,eta,QA,QB);
-      else if(fDecChannel==2)FillDstar(d,arrayMC,ptbin,deltaphi,invMass,isSelected,icentr,phi,eta,QA,QB);
-      else if(fDecChannel==3)FillDs(d,arrayMC,ptbin,deltaphi,invMass,isSelected,icentr,phi,eta,QA,QB);
+      if(fDecChannel==0)FillDplus(d,arrayMC,ptbin,deltaphi,invMass,isSelected,icentr,phi,eta,pt,QA,QB);
+      else if(fDecChannel==1)FillD02p(d,arrayMC,ptbin,deltaphi,invMass,isSelected,icentr,phi,eta,pt,QA,QB);
+      else if(fDecChannel==2)FillDstar(d,arrayMC,ptbin,deltaphi,invMass,isSelected,icentr,phi,eta,pt,QA,QB);
+      else if(fDecChannel==3)FillDs(d,arrayMC,ptbin,deltaphi,invMass,isSelected,icentr,phi,eta,pt,QA,QB);
     }
     else {      
       if(!fUseNewQnCorrFw){
@@ -1054,7 +1051,7 @@ void AliAnalysisTaskHFv1::CalculateInvMasses(AliAODRecoDecayHF* d,Float_t*& mass
 //NB: the implementation for each candidate is responsibility of the corresponding developer
 
 //******************************************************************************
-void AliAnalysisTaskHFv1::FillDplus(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t ptbin,Float_t deltaphi, const Float_t* masses,Int_t isSel,Int_t icentr, Double_t phiD, Double_t etaD, Double_t QA[2], Double_t QB[2]){
+void AliAnalysisTaskHFv1::FillDplus(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t ptbin,Float_t deltaphi, const Float_t* masses,Int_t isSel,Int_t icentr, Double_t phiD, Double_t etaD, Double_t ptD, Double_t QA[2], Double_t QB[2]){
   //D+ channel
   if(!isSel){
     if(fDebug>3)AliWarning("Candidate not selected\n");
@@ -1068,11 +1065,11 @@ void AliAnalysisTaskHFv1::FillDplus(AliAODRecoDecayHF* d,TClonesArray *arrayMC,I
   if(fFlowMethod==kSP) {
     Double_t scalprod[2]={-2.,-2.};
     scalprod[0] = TMath::Cos(fHarmonic*phiD)*QB[0]+TMath::Sin(fHarmonic*phiD)*QB[1];
-    Double_t sparsearray[4] = {scalprod[0],masses[0],etaD,0.5};
-    ((THnSparseD*)fOutput->FindObject(Form("hMassScalProduCQA_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(sparsearray);
+    Double_t sparsearray[5] = {scalprod[0],masses[0],ptD,etaD,0.5};
+    ((THnSparseD*)fOutput->FindObject(Form("hMassScalProduQA_centr%d_%d",icentrmin,icentr)))->Fill(sparsearray);
     scalprod[1] = TMath::Cos(fHarmonic*phiD)*QA[0]+TMath::Sin(fHarmonic*phiD)*QA[1];
     sparsearray[0] = scalprod[1];
-    ((THnSparseD*)fOutput->FindObject(Form("hMassScalProduCQB_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(sparsearray);
+    ((THnSparseD*)fOutput->FindObject(Form("hMassScalProduQC_centr%d_%d",icentrmin,icentr)))->Fill(sparsearray);
   }
   else {
     ((TH2F*)fOutput->FindObject(Form("hMc2deltaphi_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(fHarmonic*deltaphi),masses[0]);
@@ -1104,7 +1101,7 @@ void AliAnalysisTaskHFv1::FillDplus(AliAODRecoDecayHF* d,TClonesArray *arrayMC,I
 }
 
 //******************************************************************************
-void AliAnalysisTaskHFv1::FillD02p(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t ptbin,Float_t deltaphi, const Float_t* masses,Int_t isSel,Int_t icentr,Double_t phiD, Double_t etaD, Double_t QA[2], Double_t QB[2]){
+void AliAnalysisTaskHFv1::FillD02p(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t ptbin,Float_t deltaphi, const Float_t* masses,Int_t isSel,Int_t icentr,Double_t phiD, Double_t etaD, Double_t ptD, Double_t QA[2], Double_t QB[2]){
 
   //D0->Kpi channel
 
@@ -1119,11 +1116,11 @@ void AliAnalysisTaskHFv1::FillD02p(AliAODRecoDecayHF* d,TClonesArray *arrayMC,In
   if(isSel==1 || isSel==3) {
     if(fFlowMethod==kSP) {
       scalprod[0] = TMath::Cos(fHarmonic*phiD)*QB[0]+TMath::Sin(fHarmonic*phiD)*QB[1];
-      Double_t sparsearray[4] = {scalprod[0],masses[0],etaD,FillisSel};
-      ((THnSparseD*)fOutput->FindObject(Form("hMassScalProduCQA_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(sparsearray);
+      Double_t sparsearray[5] = {scalprod[0],masses[0],ptD,etaD,FillisSel};
+      ((THnSparseD*)fOutput->FindObject(Form("hMassScalProduQA_centr%d_%d",icentrmin,icentr)))->Fill(sparsearray);
       scalprod[1] = TMath::Cos(fHarmonic*phiD)*QA[0]+TMath::Sin(fHarmonic*phiD)*QA[1];
       sparsearray[0] = scalprod[1];
-      ((THnSparseD*)fOutput->FindObject(Form("hMassScalProduCQB_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(sparsearray);
+      ((THnSparseD*)fOutput->FindObject(Form("hMassScalProduQC_centr%d_%d",icentrmin,icentr)))->Fill(sparsearray);
     }
     else {
       ((TH2F*)fOutput->FindObject(Form("hMc2deltaphi_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(fHarmonic*deltaphi),masses[0]);
@@ -1137,11 +1134,11 @@ void AliAnalysisTaskHFv1::FillD02p(AliAODRecoDecayHF* d,TClonesArray *arrayMC,In
   if(isSel>=2) {
     if(fFlowMethod==kSP) {
       scalprod[0] = TMath::Cos(fHarmonic*phiD)*QB[0]+TMath::Sin(fHarmonic*phiD)*QB[1];
-      Double_t sparsearray[4] = {scalprod[0],masses[1],etaD,FillisSel};
-      ((THnSparseD*)fOutput->FindObject(Form("hMassScalProduCQA_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(sparsearray);
+      Double_t sparsearray[5] = {scalprod[0],masses[1],ptD,etaD,FillisSel};
+      ((THnSparseD*)fOutput->FindObject(Form("hMassScalProduQA_centr%d_%d",icentrmin,icentr)))->Fill(sparsearray);
       scalprod[1] = TMath::Cos(fHarmonic*phiD)*QA[0]+TMath::Sin(fHarmonic*phiD)*QA[1];
       sparsearray[0] = scalprod[1];
-      ((THnSparseD*)fOutput->FindObject(Form("hMassScalProduCQB_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(sparsearray);
+      ((THnSparseD*)fOutput->FindObject(Form("hMassScalProduQC_centr%d_%d",icentrmin,icentr)))->Fill(sparsearray);
     }
     else {
       ((TH2F*)fOutput->FindObject(Form("hMc2deltaphi_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(fHarmonic*deltaphi),masses[1]);
@@ -1208,7 +1205,7 @@ void AliAnalysisTaskHFv1::FillD02p(AliAODRecoDecayHF* d,TClonesArray *arrayMC,In
 }
 
 //******************************************************************************
-void AliAnalysisTaskHFv1::FillDstar(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t ptbin,Float_t deltaphi, const Float_t* masses,Int_t isSel,Int_t icentr, Double_t phiD, Double_t etaD, Double_t QA[2], Double_t QB[2]){
+void AliAnalysisTaskHFv1::FillDstar(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t ptbin,Float_t deltaphi, const Float_t* masses,Int_t isSel,Int_t icentr, Double_t phiD, Double_t etaD, Double_t ptD, Double_t QA[2], Double_t QB[2]){
   //D* channel
   if(!isSel){
     if(fDebug>3)AliWarning("Candidate not selected\n");
@@ -1225,11 +1222,11 @@ void AliAnalysisTaskHFv1::FillDstar(AliAODRecoDecayHF* d,TClonesArray *arrayMC,I
   if(fFlowMethod==kSP) {
     Double_t scalprod[2]={-2.,-2.};
     scalprod[0] = TMath::Cos(fHarmonic*phiD)*QB[0]+TMath::Sin(fHarmonic*phiD)*QB[1];
-    Double_t sparsearray[4] = {scalprod[0],masses[0],etaD,0.5};
-    ((THnSparseD*)fOutput->FindObject(Form("hMassScalProduCQA_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(sparsearray);
+    Double_t sparsearray[5] = {scalprod[0],masses[0],ptD,etaD,0.5};
+    ((THnSparseD*)fOutput->FindObject(Form("hMassScalProduQA_centr%d_%d",icentrmin,icentr)))->Fill(sparsearray);
     scalprod[1] = TMath::Cos(fHarmonic*phiD)*QA[0]+TMath::Sin(fHarmonic*phiD)*QA[1];
     sparsearray[0] = scalprod[1];
-    ((THnSparseD*)fOutput->FindObject(Form("hMassScalProduCQB_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(sparsearray);
+    ((THnSparseD*)fOutput->FindObject(Form("hMassScalProduQC_centr%d_%d",icentrmin,icentr)))->Fill(sparsearray);
   }
   else {
     ((TH2F*)fOutput->FindObject(Form("hMc2deltaphi_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(fHarmonic*deltaphi),masses[0]);
@@ -1257,7 +1254,7 @@ void AliAnalysisTaskHFv1::FillDstar(AliAODRecoDecayHF* d,TClonesArray *arrayMC,I
 }
 
 //******************************************************************************
-void AliAnalysisTaskHFv1::FillDs(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t ptbin,Float_t deltaphi, const Float_t* masses,Int_t isSel,Int_t icentr, Double_t phiD, Double_t etaD, Double_t QA[2], Double_t QB[2]){
+void AliAnalysisTaskHFv1::FillDs(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t ptbin,Float_t deltaphi, const Float_t* masses,Int_t isSel,Int_t icentr, Double_t phiD, Double_t etaD, Double_t ptD, Double_t QA[2], Double_t QB[2]){
 
   //Ds channel
   if(!isSel){
@@ -1276,11 +1273,11 @@ void AliAnalysisTaskHFv1::FillDs(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_
   if(isDsPhiKKpi){
     if(fFlowMethod==kSP) {
       scalprod[0] = TMath::Cos(fHarmonic*phiD)*QB[0]+TMath::Sin(fHarmonic*phiD)*QB[1];
-      Double_t sparsearray[4] = {scalprod[0],masses[0],etaD,0.5};
-      ((THnSparseD*)fOutput->FindObject(Form("hMassScalProduCQA_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(sparsearray);
+      Double_t sparsearray[5] = {scalprod[0],masses[0],ptD,etaD,0.5};
+      ((THnSparseD*)fOutput->FindObject(Form("hMassScalProduQA_centr%d_%d",icentrmin,icentr)))->Fill(sparsearray);
       scalprod[1] = TMath::Cos(fHarmonic*phiD)*QA[0]+TMath::Sin(fHarmonic*phiD)*QA[1];
       sparsearray[0] = scalprod[1];
-      ((THnSparseD*)fOutput->FindObject(Form("hMassScalProduCQB_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(sparsearray);
+      ((THnSparseD*)fOutput->FindObject(Form("hMassScalProduQC_centr%d_%d",icentrmin,icentr)))->Fill(sparsearray);
     }
     else {
       ((TH2F*)fOutput->FindObject(Form("hMc2deltaphi_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(fHarmonic*deltaphi),masses[0]);
@@ -1294,11 +1291,11 @@ void AliAnalysisTaskHFv1::FillDs(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_
   if(isDsPhipiKK){
     if(fFlowMethod==kSP) {
       scalprod[0] = TMath::Cos(fHarmonic*phiD)*QB[0]+TMath::Sin(fHarmonic*phiD)*QB[1];
-      Double_t sparsearray[4] = {scalprod[0],masses[1],etaD,0.5};
-      ((THnSparseD*)fOutput->FindObject(Form("hMassScalProduCQA_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(sparsearray);
+      Double_t sparsearray[5] = {scalprod[0],masses[1],ptD,etaD,0.5};
+      ((THnSparseD*)fOutput->FindObject(Form("hMassScalProduQA_centr%d_%d",icentrmin,icentr)))->Fill(sparsearray);
       scalprod[1] = TMath::Cos(fHarmonic*phiD)*QA[0]+TMath::Sin(fHarmonic*phiD)*QA[1];
       sparsearray[0] = scalprod[1];
-      ((THnSparseD*)fOutput->FindObject(Form("hMassScalProduCQB_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(sparsearray);
+      ((THnSparseD*)fOutput->FindObject(Form("hMassScalProduQC_centr%d_%d",icentrmin,icentr)))->Fill(sparsearray);
     }
     else {
       ((TH2F*)fOutput->FindObject(Form("hMc2deltaphi_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(fHarmonic*deltaphi),masses[1]);
